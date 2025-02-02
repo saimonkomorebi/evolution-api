@@ -1,13 +1,13 @@
 services:
   api:
     container_name: evolution_api
-    image: atendai/evolution-api:homolog
+    image: atendai/evolution-api:v2.1.1
     restart: always
     depends_on:
       - redis
       - postgres
     ports:
-      - 8080:8080
+      - "8080:8080"            # Evolution API exposed on host port 8080
     volumes:
       - evolution_instances:/evolution/instances
     networks:
@@ -15,29 +15,25 @@ services:
     env_file:
       - .env
     expose:
-      - 8080
+      - "8080"
 
   redis:
     image: redis:latest
-    networks:
-      - evolution-net
     container_name: redis
     command: >
       redis-server --port 6379 --appendonly yes
     volumes:
       - evolution_redis:/data
     ports:
-      - 6379:6379
+      - "6380:6379"            # Changed host port from 6379 to 6380
+    networks:
+      - evolution-net
 
   postgres:
     container_name: postgres
     image: postgres:15
-    networks:
-      - evolution-net
     command: ["postgres", "-c", "max_connections=1000", "-c", "listen_addresses=*"]
     restart: always
-    ports:
-      - 5432:5432
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=pass
@@ -45,14 +41,17 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"            # Changed host port from 5432 to 5433
+    networks:
+      - evolution-net
     expose:
-      - 5432
+      - "5432"
 
 volumes:
   evolution_instances:
   evolution_redis:
   postgres_data:
-
 
 networks:
   evolution-net:
